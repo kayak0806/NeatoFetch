@@ -1,0 +1,18 @@
+<package>
+  <description brief="neato_fetch">
+
+     neato_fetch
+
+  </description>
+  <author>Kaitlin</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/neato_fetch</url>
+  <depend package="sensor_msgs"/>
+  <depend package="cv_bridge"/>
+  <depend package="rospy"/>
+  <depend package="std_msgs"/>
+
+</package>
+
+
