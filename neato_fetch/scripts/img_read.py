@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import roslib
 roslib.load_manifest('neato_fetch')
+import rospkg
 import sys
 import rospy
 import cv2
@@ -17,6 +18,11 @@ class image_converter:
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("image_topic",Image,self.callback)
 
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.cv.CV_FOURCC(*'XVID')
+    pkgpath = rospkg.RosPack().get_path('neato_fetch')
+    self.out = cv2.VideoWriter(pkgpath+'/videos/output.avi',fourcc, 20.0, (640,480))
+
   def callback(self,data):
     try:
       cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
@@ -27,10 +33,9 @@ class image_converter:
     if cols > 60 and rows > 60 :
       cv2.circle(cv_image, (50,50), 10, 255)
 
-    # cv2.imshow("Image window", cv_image)
-    # cv2.waitKey(1)
+    # cv2.imwrite("/home/kgallagher/Pictures/test.jpg",cv_image)
+    self.out.write(cv_image)
 
-    cv2.imwrite("/home/kgallagher/Pictures/test.jpg",cv_image)
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
     except CvBridgeError, e:
@@ -43,6 +48,7 @@ def main(args):
     rospy.spin()
   except KeyboardInterrupt:
     print "Shutting down"
+  ic.out.release()
   cv2.destroyAllWindows()
 
 if __name__ == '__main__':
