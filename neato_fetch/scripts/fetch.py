@@ -31,9 +31,31 @@ class image_converter:
     except CvBridgeError, e:
       print e
 
+
+#TODO Calibration
+
 class ball_follower:
+  r = rospy.Rate(10)
   def __init__(self):
-    #TODO Design a simple ball following behavior.  Consider: what is we lose sight of ball, velocity
+    self.move_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
+    self.move_sub  = rospy.Subscriber('PLACE HOLDER JEEZ AH', TYPE, coordinate_to_action)
+    self.lin_vel = 0
+    self.ang_vel = 0
+  def coordinate_to_action(self, msg):
+    #rows, cols, circle_rad
+    y_transform = frame_height/2 - y
+    x_transform = frame_width/2 - x
+    angle_diff = math.tan(x/depth)
+    twist = Twist()
+
+    lin_proportion = 0.0015*depth
+    twist.linear = Vector3(lin_proportion, 0, 0)
+
+    turn_proportion = 0.0015*(angle_diff)
+    twist.angular = Vector3(0, 0, turn_proportion)
+
+    self.move_pub.publish(twist.linear, twist.angular)
+
 
 def main(args):
   ic = image_converter()
