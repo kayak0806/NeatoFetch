@@ -8,20 +8,15 @@ import cv2
 from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from geometry_msgs.msg import Twist, Vector3
 
 class image_converter:
 
   def __init__(self):
-    self.image_pub = rospy.Publisher("image_topic_2",Image)
+    self.image_pub = rospy.Publisher("/processed_image",Image)
 
-    cv2.namedWindow("Image window", 1)
     self.bridge = CvBridge()
-    self.image_sub = rospy.Subscriber("image_topic",Image,self.callback)
-
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.cv.CV_FOURCC(*'XVID')
-    pkgpath = rospkg.RosPack().get_path('neato_fetch')
-    self.out = cv2.VideoWriter(pkgpath+'/videos/output.avi',fourcc, 20.0, (640,480))
+    self.image_sub = rospy.Subscriber("/camera/image_raw",Image,self.callback)
 
   def callback(self,data):
     try:
@@ -29,17 +24,16 @@ class image_converter:
     except CvBridgeError, e:
       print e
 
-    (rows,cols,channels) = cv_image.shape
-    if cols > 60 and rows > 60 :
-      cv2.circle(cv_image, (50,50), 10, 255)
-
-    # cv2.imwrite("/home/kgallagher/Pictures/test.jpg",cv_image)
-    self.out.write(cv_image)
+    #TODO Insert Image Processing Stuff Here
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
     except CvBridgeError, e:
       print e
+
+class ball_follower:
+  def __init__(self):
+    #TODO Design a simple ball following behavior.  Consider: what is we lose sight of ball, velocity
 
 def main(args):
   ic = image_converter()
@@ -48,8 +42,6 @@ def main(args):
     rospy.spin()
   except KeyboardInterrupt:
     print "Shutting down"
-  ic.out.release()
-  cv2.destroyAllWindows()
 
 if __name__ == '__main__':
     main(sys.argv)
