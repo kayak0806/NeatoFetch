@@ -53,21 +53,26 @@ class image_converter:
           self.circle_location.append((c[0], c[1]))
           return (c[0],c[1],c[2])
 
-
-#TODO Calibration
-
 class ball_follower:
   r = rospy.Rate(10)
   def __init__(self):
     self.move_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-    self.move_sub  = rospy.Subscriber('PLACE HOLDER JEEZ AH', TYPE, coordinate_to_action)
+    self.move_sub  = rospy.Subscriber('ball_coords', Vector3, coordinate_to_action)
     self.lin_vel = 0
     self.ang_vel = 0
+    self.frame_height = 480
+    self.frame_width = 640
   def coordinate_to_action(self, msg):
-    #rows, cols, circle_rad
-    y_transform = frame_height/2 - y
-    x_transform = frame_width/2 - x
+    y = self.move_sub[1]
+    x = self.move_sub[0]
+    r = self.move_sub[2]
+
+    depth_proportion = 
+    depth = r*depth_proportion
+    y_transform = self.frame_height/2 - y
+    x_transform = self.frame_width/2 - x
     angle_diff = math.tan(x/depth)
+
     twist = Twist()
 
     lin_proportion = 0.0015*depth
@@ -82,6 +87,8 @@ class ball_follower:
 def main(args):
   ic = image_converter()
   rospy.init_node('image_converter', anonymous=True)
+  fido = ball_follower()
+  rospy.init_node('ball_follower', anonymous=True)
   try:
     rospy.spin()
   except KeyboardInterrupt:
