@@ -11,14 +11,13 @@ from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist, Vector3
 
 class image_converter:
-
   def __init__(self):
     self.image_pub = rospy.Publisher("/processed_image",Image)
     self.ball_pub = rospy.Publisher("/ball_coords",Vector3)
 
     self.bridge = CvBridge()
     self.image_sub = rospy.Subscriber("/camera/image_raw",Image,self.callback)
-    self.circle_location = []
+    self.ball_location = None
 
   def callback(self,data):
     try:
@@ -32,13 +31,14 @@ class image_converter:
     self.find_circles(edges,cv_image)
 
 
-    # ball = self.circle_location[-1]
+    # self.ball_location = self.circle_location[-1]
     # location = Vector3(ball[0],ball[1],ball[2])
 
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
-      # self.ball_pub.publish(location)
+      if self.ball_location:
+        self.ball_pub.publish(self.ball_location)
     except CvBridgeError, e:
       print e
 
@@ -52,10 +52,10 @@ class image_converter:
           cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
           # draw the center of the circle
           cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
-          self.circle_location.append((c[0], c[1],c[2]))
+          self.ball_location = (c[0], c[1],c[2])
           print (c[0],c[1],c[2])
 
-"""
+
 class ball_follower:
   r = rospy.Rate(10)
   def __init__(self):
@@ -70,7 +70,7 @@ class ball_follower:
     x = self.move_sub[0]
     r = self.move_sub[2]
 
-    depth_proportion = 
+    depth_proportion = 0
     depth = r*depth_proportion
     y_transform = self.frame_height/2 - y
     x_transform = self.frame_width/2 - x
@@ -85,11 +85,10 @@ class ball_follower:
     twist.angular = Vector3(0, 0, turn_proportion)
 
     self.move_pub.publish(twist.linear, twist.angular)
-"""
 
 def main(args):
-  ic = image_converter()
   rospy.init_node('image_converter', anonymous=True)
+  ic = image_converter()
   fido = ball_follower()
   rospy.init_node('ball_follower', anonymous=True)
   try:
