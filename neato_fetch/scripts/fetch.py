@@ -10,6 +10,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist, Vector3
 import math
+import numpy as np
 
 class image_converter:
   def __init__(self):
@@ -29,7 +30,7 @@ class image_converter:
     #Image Processing
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 100, 150)
-    self.find_circles(edges,cv_image,self.ball_location[2])
+    self.find_circles(edges,cv_image)
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
@@ -45,16 +46,14 @@ class image_converter:
     if circles is not None:
       for c in circles[0,:]:
           #TODO Check to see if inside part is red
-          hsv_img = cv2.cvtColor(img_src, cv2.COLOR_BGR2HSV)
-          lower_red = np.array([0, 0, 0])
-          upper_red = np.array([179, 50, 50])
+          hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
+          lower_red = np.array([17, 15, 100])
+          upper_red = np.array([50, 56, 200])
           mask = cv2.inRange(hsv_img, lower_red, upper_red)
 
-          if mask[c[0], c[1]]:
-            print 'True'
-          else:
-            print 'False'
+          print mask[c[0], c[1]]
 
+          img_out = cv2.add(mask,img_out)
           # draw the outer circle
           cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
           # draw the center of the circle
@@ -88,7 +87,7 @@ class ball_follower:
     lin_proportion = 0#depth_proportion*depth
     twist.linear = Vector3(lin_proportion, 0, 0)
 
-    turn_proportion = -0.1*(angle_diff)
+    turn_proportion = 0*(angle_diff)
     twist.angular = Vector3(0, 0, turn_proportion)
 
     self.move_pub.publish(twist.linear, twist.angular)
