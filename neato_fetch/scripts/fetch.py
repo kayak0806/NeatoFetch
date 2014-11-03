@@ -9,6 +9,7 @@ from std_msgs.msg import String
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist, Vector3
+import math
 
 class image_converter:
   def __init__(self):
@@ -52,36 +53,36 @@ class image_converter:
           cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
           # draw the center of the circle
           cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
-          self.ball_location = (c[0], c[1],c[2])
-          print (c[0],c[1],c[2])
+          self.ball_location = Vector3(c[0], c[1],c[2])
+          #print (c[0],c[1],c[2])
 
 
 class ball_follower:
-  r = rospy.Rate(10)
   def __init__(self):
     self.move_pub = rospy.Publisher('cmd_vel', Twist, queue_size=10)
-    self.move_sub  = rospy.Subscriber('ball_coords', Vector3, coordinate_to_action)
+    self.move_sub  = rospy.Subscriber('ball_coords', Vector3, self.coordinate_to_action)
     self.lin_vel = 0
     self.ang_vel = 0
     self.frame_height = 480
     self.frame_width = 640
   def coordinate_to_action(self, msg):
-    y = self.move_sub[1]
-    x = self.move_sub[0]
-    r = self.move_sub[2]
+    x = msg.x
+    y = msg.y
+    r = msg.z
 
-    depth_proportion = 0
+    depth_proportion = -0.8205
     depth = r*depth_proportion
     y_transform = self.frame_height/2 - y
     x_transform = self.frame_width/2 - x
     angle_diff = math.tan(x/depth)
+    print angle_diff
 
     twist = Twist()
 
-    lin_proportion = 0.0015*depth
+    lin_proportion = 0#depth_proportion*depth
     twist.linear = Vector3(lin_proportion, 0, 0)
 
-    turn_proportion = 0.0015*(angle_diff)
+    turn_proportion = -0.1*(angle_diff)
     twist.angular = Vector3(0, 0, turn_proportion)
 
     self.move_pub.publish(twist.linear, twist.angular)
@@ -90,7 +91,6 @@ def main(args):
   rospy.init_node('image_converter', anonymous=True)
   ic = image_converter()
   fido = ball_follower()
-  rospy.init_node('ball_follower', anonymous=True)
   try:
     rospy.spin()
   except KeyboardInterrupt:
