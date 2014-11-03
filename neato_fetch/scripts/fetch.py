@@ -29,12 +29,7 @@ class image_converter:
     #Image Processing
     gray = cv2.cvtColor(cv_image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 100, 150)
-    self.find_circles(edges,cv_image)
-
-
-    # self.ball_location = self.circle_location[-1]
-    # location = Vector3(ball[0],ball[1],ball[2])
-
+    self.find_circles(edges,cv_image,self.ball_location[2])
 
     try:
       self.image_pub.publish(self.bridge.cv2_to_imgmsg(cv_image, "bgr8"))
@@ -43,21 +38,29 @@ class image_converter:
     except CvBridgeError, e:
       print e
 
-  def find_circles(self,img_src, img_out):
+  def find_circles(self,img_src,img_out):
     """Finds and plots circles using Hough Circle detection."""
     circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=20, minRadius=10, maxRadius=20)
 
     if circles is not None:
       for c in circles[0,:]:
+          #TODO Check to see if inside part is red
+          hsv_img = cv2.cvtColor(img_src, cv2.COLOR_BGR2HSV)
+          lower_red = np.array([0, 0, 0])
+          upper_red = np.array([179, 50, 50])
+          mask = cv2.inRange(hsv_img, lower_red, upper_red)
+
+          if mask[c[0], c[1]]:
+            print 'True'
+          else:
+            print 'False'
+
           # draw the outer circle
           cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
           # draw the center of the circle
           cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
           self.ball_location = Vector3(c[0], c[1],c[2])
-
           #print (c[0],c[1],c[2])
-
-
 
 
 class ball_follower:
