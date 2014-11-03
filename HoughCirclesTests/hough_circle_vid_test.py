@@ -22,8 +22,8 @@ def color_shift(img_src):
 	# Convert BGR to HSV colorspace
 	hsv_img = cv2.cvtColor(img_src, cv2.COLOR_BGR2HSV)
 	# Define range of red color in HSV
-	lower_red = np.array([0, 0, 0])
-	upper_red = np.array([179, 50, 50])
+	lower_red = np.array([0, 50, 50])
+	upper_red = np.array([10, 255, 255])
 
 	# Threshold HSV image to get only red colors
 	mask = cv2.inRange(hsv_img, lower_red, upper_red)
@@ -39,18 +39,18 @@ while cap.isOpened():
 	ret, frame = cap.read()
 
 	# Processes video frames
-	#blur = cv2.medianBlur(frame, 3)
+	blur = cv2.medianBlur(frame, 3)
 	gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 	edges = cv2.Canny(gray, 100, 150)
 
-	#mask = color_shift(blur)
+	mask = color_shift(blur)
 
 	plot_circles(edges, frame)
 		
 
 	# Shows all of the things!
 	cv2.imshow('Video', frame)
-	#cv2.imshow('Mask', mask)
+	cv2.imshow('Mask', mask)
 	cv2.imshow('Canny', edges)
 
 	if cv2.waitKey(50) & 0xFF == ord('q'):
