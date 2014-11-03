@@ -45,6 +45,7 @@ class image_converter:
     circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=20, minRadius=10, maxRadius=20)
 
     if circles is not None:
+      location = None
       for c in circles[0,:]:
           #TODO Check to see if inside part is red
           hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
@@ -58,8 +59,9 @@ class image_converter:
             cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
             # draw the center of the circle
             cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
-            self.ball_location = Vector3(c[0], c[1],c[2])
+            location = Vector3(c[0], c[1],c[2])
             #print (c[0],c[1],c[2])
+      self.ball_location = location
 
 
 class ball_follower:
