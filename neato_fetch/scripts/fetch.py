@@ -42,10 +42,10 @@ class image_converter:
 
   def find_circles(self,img_src,img_out):
     """Finds and plots circles using Hough Circle detection."""
-    circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=20, minRadius=10, maxRadius=20)
-
+    circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=20, minRadius=10, maxRadius=50)
+    location = None
     if circles is not None:
-      location = None
+
       for c in circles[0,:]:
           #TODO Check to see if inside part is red
           hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
@@ -54,9 +54,13 @@ class image_converter:
           upper_red = np.array([10, 255, 255])
           mask = cv2.inRange(hsv_img, lower_red, upper_red)
 
-          if mask[c[0], c[1]] == 0:
+          cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
+          # draw the center of the circle
+          cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
+
+          if mask[c[1], c[0]] == 255:
             # draw the outer circle
-            cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
+            cv2.circle(img_out,(c[0],c[1]),c[2],(255,0,0),2)
             # draw the center of the circle
             cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
             location = Vector3(c[0], c[1],c[2])
@@ -77,19 +81,21 @@ class ball_follower:
     y = msg.y
     r = msg.z
 
-    depth_proportion = -0.8205
-    depth = r*depth_proportion
+    depth_proportion = -0.025
+    depth_intercept = 1.35
+    depth = r*depth_proportion + depth_intercept
+    print depth
     y_transform = self.frame_height/2 - y
     x_transform = self.frame_width/2 - x
     angle_diff = math.tan(x/depth)
-    print angle_diff
+    #print angle_diff
 
     twist = Twist()
 
-    lin_proportion = 0#depth_proportion*depth
+    lin_proportion = 0#-(0.5-depth)*0.1
     twist.linear = Vector3(lin_proportion, 0, 0)
 
-    turn_proportion = -0.02*(angle_diff)
+    turn_proportion = -0.015*(angle_diff)
 
     twist.angular = Vector3(0, 0, turn_proportion)
 
