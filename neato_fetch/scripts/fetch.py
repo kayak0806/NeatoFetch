@@ -11,6 +11,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist, Vector3
 import math
+import numpy as np
 
 class image_converter:
   def __init__(self):
@@ -47,6 +48,7 @@ class image_converter:
       for c in circles[0,:]:
           #TODO Check to see if inside part is red
           hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
+
           lower_red = np.array([0, 50, 50])
           upper_red = np.array([10, 255, 255])
           mask = cv2.inRange(hsv_img, lower_red, upper_red)
@@ -86,6 +88,7 @@ class ball_follower:
     twist.linear = Vector3(lin_proportion, 0, 0)
 
     turn_proportion = -0.02*(angle_diff)
+
     twist.angular = Vector3(0, 0, turn_proportion)
 
     self.move_pub.publish(twist.linear, twist.angular)
