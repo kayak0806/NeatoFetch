@@ -52,7 +52,7 @@ class image_converter:
           cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),2)
           # draw the center of the circle
           cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
-          self.ball_location = (c[0], c[1],c[2])
+          self.ball_location = Vector3(c[0], c[1],c[2])
           print (c[0],c[1],c[2])
 
 
