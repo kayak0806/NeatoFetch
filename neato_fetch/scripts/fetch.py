@@ -45,7 +45,6 @@ class image_converter:
     circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=20, minRadius=10, maxRadius=50)
     location = None
     if circles is not None:
-
       for c in circles[0,:]:
           #TODO Check to see if inside part is red
           hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
@@ -58,7 +57,7 @@ class image_converter:
           # draw the center of the circle
           cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)
 
-          if mask[c[1], c[0]] == 255:
+          if True:#mask[c[1], c[0]] == 255:
             # draw the outer circle
             cv2.circle(img_out,(c[0],c[1]),c[2],(255,0,0),2)
             # draw the center of the circle
@@ -84,18 +83,21 @@ class ball_follower:
     depth_proportion = -0.025
     depth_intercept = 1.35
     depth = r*depth_proportion + depth_intercept
-    print depth
+    # print depth
     y_transform = self.frame_height/2 - y
-    x_transform = self.frame_width/2 - x
-    angle_diff = math.tan(x/depth)
-    #print angle_diff
+    x_transform = x-self.frame_width/2
+    angle_diff = math.tan(x_transform/depth)
+    print "x: ", x_transform
+    print "y: ",y
+    print "d: ", depth
+    print "a: ", angle_diff
 
     twist = Twist()
 
     lin_proportion = 0#-(0.5-depth)*0.1
     twist.linear = Vector3(lin_proportion, 0, 0)
 
-    turn_proportion = -0.015*(angle_diff)
+    turn_proportion = 0*(angle_diff)
 
     twist.angular = Vector3(0, 0, turn_proportion)
 
