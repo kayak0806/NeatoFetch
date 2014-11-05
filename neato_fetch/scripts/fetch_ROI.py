@@ -113,7 +113,7 @@ class ball_follower:
 
     twist = Twist()
 
-    lin_proportion = 0#-(0.5-depth)*0.07
+    lin_proportion = -(0.5-depth)*0.07
     twist.linear = Vector3(lin_proportion, 0, 0)
 
     turn_proportion = -0.0005*(angle_diff)
