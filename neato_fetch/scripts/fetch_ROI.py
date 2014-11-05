@@ -42,28 +42,33 @@ class image_converter:
 
   def find_circles(self,img_src,img_out):
     """Finds and plots circles using Hough Circle detection."""
-    circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=30, minRadius=10, maxRadius=100)
+    circles = cv2.HoughCircles(img_src, cv2.cv.CV_HOUGH_GRADIENT, 1, img_src.shape[0]/8, param1=10, param2=30, minRadius=10, maxRadius=50)
+    hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
+
+    lower_red = np.array([0, 55, 55])
+    upper_red = np.array([10, 255, 255])
+    mask = cv2.inRange(hsv_img, lower_red, upper_red)
+
     location = None
     if circles is not None:
-      hsv_img = cv2.cvtColor(img_out, cv2.COLOR_BGR2HSV)
-
-      lower_red = np.array([0, 50, 50])
-      upper_red = np.array([10, 255, 255])
-      mask = cv2.inRange(hsv_img, lower_red, upper_red)
-
       for c in circles[0,:]:
 
           ROI = mask[c[0]-c[2]:c[0]+c[2], c[1]-c[2]:c[1]+c[2]]
           
-          hist, bins= np.histogram(ROI, 256, [0,256])
+          mean = cv2.mean(ROI)
+          #print mean
 
-          cv2.imshow('mask', mask)
-          cv2.imshow('canny', img_src)
-          if cv2.waitKey(50) & 0xFF == ord('q'):
-            cap.release()
-            cv2.destroyAllWindows()          
+          #cv2.imshow('mask', ROI)
+          # cv2.imshow('canny', img_src)
+          # if cv2.waitKey(50) & 0xFF == ord('q'):
+          #   cap.release()
+          #   cv2.destroyAllWindows()   
 
-          if max(hist) >= 8000:
+          # cv2.circle(img_out,(c[0],c[1]),c[2],(0,255,0),1)
+          # # draw the center of the circle
+          # cv2.circle(img_out,(c[0],c[1]),2,(0,0,255),3)       
+
+          if mask[c[1], c[0]]  > 100:
             # draw the outer circle
             cv2.circle(img_out,(c[0],c[1]),c[2],(255,0,0),5)
             # draw the center of the circle
@@ -89,18 +94,29 @@ class ball_follower:
     depth_proportion = -0.025
     depth_intercept = 1.35
     depth = r*depth_proportion + depth_intercept
-    print depth
+    # print depth
     y_transform = self.frame_height/2 - y
-    x_transform = self.frame_width/2 - x
-    angle_diff = math.tan(x/depth)
-    #print angle_diff
+    x_transform = x-self.frame_width/2
+    angle_diff = x_transform
+    print angle_diff
+
+    if (angle_diff-10) < 0 and (angle_diff + 10) > 0:
+      angle_diff = 0 
+
+    if depth-.05<0.5 and depth+.05>0.5:
+      depth = 0.5
+
+    # print "x: ", x_transform
+    # print "y: ",y
+    # print "d: ", depth
+    # print "a: ", angle_diff
 
     twist = Twist()
 
-    lin_proportion = 0#-(0.5-depth)*0.1
+    lin_proportion = 0#-(0.5-depth)*0.07
     twist.linear = Vector3(lin_proportion, 0, 0)
 
-    turn_proportion = 0#-0.015*(angle_diff)
+    turn_proportion = -0.0005*(angle_diff)
 
     twist.angular = Vector3(0, 0, turn_proportion)
 
